@@ -143,6 +143,7 @@ let Investment = {
 		let showHiddenGb = (InvestmentSettings && InvestmentSettings.showHiddenGb !== undefined) ? InvestmentSettings.showHiddenGb : 0;
 		let lastupdate = (InvestmentSettings && InvestmentSettings.lastupdate !== undefined) ? InvestmentSettings.lastupdate : 0;
 		let removeUnsafeCalc = (InvestmentSettings && InvestmentSettings.removeUnsafeCalc !== undefined) ? InvestmentSettings.removeUnsafeCalc : 0;
+		let lastSorting = (InvestmentSettings && InvestmentSettings.sorting !== undefined) ? InvestmentSettings.sorting : null;
 
 		b.push(`<div class="total-wrapper dark-bg">`);
 
@@ -337,7 +338,27 @@ let Investment = {
 
 		$('#history-wrapper').html(h.join('')).promise().done(function(){
 
-			$('#InvestmentTable').tableSorter();
+			let investmentTable = $('#InvestmentTable');
+			investmentTable.tableSorter();
+			investmentTable.on('sorted', function(event, column, direction, type) {
+				console.info('sorted');
+				console.log( column, direction , type);
+				// todo: extract saving one/multiple value(s) into function and reuse for all duplicated places
+				let InvestmentSettings = JSON.parse(localStorage.getItem('InvestmentSettings') || '{}');
+				InvestmentSettings['sorting'] = {
+					column: column,
+					direction: direction,
+					type: type
+				};
+				localStorage.setItem('InvestmentSettings', JSON.stringify(InvestmentSettings));
+			});
+
+			if(lastSorting) {
+				// restore previous sorting
+				let tbody = investmentTable.find('tbody');
+				let rows = tbody.find('tr').not('.sorter-header, .other-header').get();
+				investmentTable.sortTable(tbody, rows, lastSorting.column, lastSorting.direction, lastSorting.type);
+			}
 
 			$('#InvestmentTable tbody tr').on('click', function () {
 

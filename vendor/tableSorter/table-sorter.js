@@ -146,6 +146,8 @@
             row.hasClass('highlight-row') ? row.removeClass('highlight-row') : row.addClass('highlight-row');
             row.removeClass('to-be-highlighted');
         });
+
+        this.sortTable = (tbody, rows, column, direction, type) => sortTable(tbody, rows, column, direction, type);
     };
 
     function sortTable(tbody, rows, column, direction, type) {
@@ -171,6 +173,8 @@
 				tbody.append(row);
             }
         });
+
+        tbody.trigger('sorted', [column, direction, type])
     }
 
     function getVal(elm, column, type) {
