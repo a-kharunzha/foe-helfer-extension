@@ -499,9 +499,9 @@ GetFights = () =>{
 
 	// --------------------------------------------------------------------------------------------------
 	// --------------------------------------------------------------------------------------------------
-	// Es wurde das LG eines Mitspielers angeklickt, bzw davor die Übersicht
+	// The LG of a fellow player was clicked on, or before that the overview
 
-	// Übersicht der LGs eines Nachbarn
+	// Overview of a neighbor's GBs
 	FoEproxy.addHandler('GreatBuildingsService', 'getOtherPlayerOverview', (data, postData) => {
 		MainParser.UpdatePlayerDict(data.responseData, 'LGOverview');
 
@@ -512,9 +512,9 @@ GetFights = () =>{
 
 	});
 
-	// es wird ein LG eines Spielers geöffnet
+	// a GB of a player is opened
 
-	// lgUpdateData sammelt die informationen aus mehreren Handlern
+	// lgUpdateData collects the information from several handlers
 	let lgUpdateData = null;
 
 	FoEproxy.addHandler('GreatBuildingsService', 'all', (data, postData) => {
