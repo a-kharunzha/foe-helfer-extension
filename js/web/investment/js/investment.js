@@ -168,6 +168,7 @@ let Investment = {
 		h.push('<table id="InvestmentTable" class="foe-table">');
 		h.push('<thead>' +
 			'<tr class="sorter-header">' +
+			'<th class="case-sensitive" data-type="invest-group">' + i18n('Boxes.Investment.Overview.Page') + '</th>' +
 			'<th class="case-sensitive" data-type="invest-group">' + i18n('Boxes.Investment.Overview.Player') + '</th>' +
 			'<th class="case-sensitive" data-type="invest-group">' + i18n('Boxes.Investment.Overview.Building') + '</th>' +
 			'<th class="is-number text-center" data-type="invest-group"></th>');
@@ -267,6 +268,7 @@ let Investment = {
 			hiddenClass=(showHiddenGb && isHidden) ? ' ishidden' : (isHidden) ? ' ishidden hide' : '';
 
 			h.push(`<tr id="invhist${x}" data-id="${contribution['id']}" data-max-progress="${contribution['max_progress']}" data-detail='${JSON.stringify(history)}' class="${hasFpHistoryClass}${newerClass}${hiddenClass}">` +
+				`<td >${contribution['page']}</td>` +
 				`<td class="case-sensitive" data-text="${contribution['playerName'].toLowerCase().replace(/[\W_ ]+/g, "")}"><img style="max-width: 22px" src="${MainParser.InnoCDN + 'assets/shared/avatars/' + (MainParser.PlayerPortraits[contribution['Avatar']] || 'portrait_433')}.jpg" alt="${contribution['playerName']}"> ${MainParser.GetPlayerLink(contribution['playerId'], contribution['playerName'])}</td>`);
 			h.push('<td class="case-sensitive" data-text="' + contribution['gbname'].toLowerCase().replace(/[\W_ ]+/g, "") + '">' + contribution['gbname'] + ' (' + contribution['level'] + ')</td>');
 			h.push(`<td class="is-number text-center invest-tooltip" data-number="${isHidden}" title="${i18n('Boxes.Investment.Overview.HideGB')}"><span class="hideicon ishidden-${isHidden?'on':'off'}"></span></td>`);
@@ -424,51 +426,55 @@ let Investment = {
 	},
 
 
-	RefreshInvestmentDB: async (Investment) => {
-		await IndexDB.addUserFromPlayerDictIfNotExists(Investment['playerId'], true);
+	RefreshInvestmentDB: async (InvestmentUpdate) => {
+		await IndexDB.addUserFromPlayerDictIfNotExists(InvestmentUpdate['playerId'], true);
 
 		let CurrentInvest = await IndexDB.db.investhistory
 			.where({
-				playerId: Investment['playerId'],
-				entity_id: Investment['entity_id']
+				playerId: InvestmentUpdate['playerId'],
+				entity_id: InvestmentUpdate['entity_id']
 			})
 			.first();
 
+		let updateKeys = [
+			'currentFp',
+			'gbname',
+			'current_progress',
+			'profit',
+			'medals',
+			'blueprints',
+			'rank',
+			'fphistory',
+			'increase',
+			'ishidden',
+			'page'
+		];
+		let createKeys = [
+			'playerId',
+			'playerName',
+			'Avatar',
+			'entity_id',
+			'level',
+			'max_progress',
+		];
+
+		let fieldsToSet = Investment.mergeInvestment({}, InvestmentUpdate, updateKeys);
+		// console.info('common update');
+		// console.log(fieldsToSet);
+
 		if (CurrentInvest === undefined)
 		{
-			await IndexDB.db.investhistory.add({
-				playerId: Investment['playerId'],
-				playerName: Investment['playerName'],
-				Avatar: Investment['Avatar'],
-				entity_id: Investment['entity_id'],
-				gbname: Investment['gbname'],
-				level: Investment['level'],
-				rank: Investment['rank'],
-				currentFp: Investment['currentFp'],
-				fphistory: Investment['fphistory'],
-				current_progress: Investment['current_progress'],
-				max_progress: Investment['max_progress'],
-				profit: Investment['profit'],
-				medals: Investment['medals'],
-				blueprints: Investment['blueprints'],
-				increase: Investment['increase'],
-				ishidden: Investment['ishidden'],
-				date: MainParser.getCurrentDate()
-			});
+			fieldsToSet = Investment.mergeInvestment(fieldsToSet, InvestmentUpdate, createKeys);
+			fieldsToSet.date = MainParser.getCurrentDate();
+			// console.info('create fields');
+			// console.log(fieldsToSet);
+
+			await IndexDB.db.investhistory.add(fieldsToSet);
 		}
 		else {
-			await IndexDB.db.investhistory.update(CurrentInvest.id, {
-				currentFp: Investment['currentFp'],
-				gbname: Investment['gbname'],
-				current_progress: Investment['current_progress'],
-				profit: Investment['profit'],
-				medals: Investment['medals'],
-				blueprints: Investment['blueprints'],
-				rank: Investment['rank'],
-				fphistory: Investment['fphistory'],
-				increase: Investment['increase'],
-				ishidden: Investment['ishidden']
-			});
+			// console.log('update fields');
+			// console.info(fieldsToSet);
+			await IndexDB.db.investhistory.update(CurrentInvest.id, fieldsToSet);
 		}
 	},
 
@@ -479,8 +485,11 @@ let Investment = {
 		let allGB = await IndexDB.db.investhistory.where('id').above(0).keys();
 		let UpdatedList = false;
 		let playerSyncGbKeys = null;
-		let arcLevelCheck = JSON.parse(localStorage.getItem('InvestmentArcBonus'));
-		let forceFullUpdate = !arcLevelCheck || arcLevelCheck != MainParser.ArkBonus ? true : false;
+		let storedArcLevel = localStorage.getItem('InvestmentArcBonus');
+		let forceFullUpdate = storedArcLevel === null || JSON.parse(localStorage.getItem('InvestmentArcBonus')) !== MainParser.ArkBonus;
+		let itemsPerPage = 10; // amount o GBs shown by game in contributions list
+		let positionCounter = 1;
+
 
 		for (let i in LGData)
 		{
@@ -519,6 +528,11 @@ let Investment = {
 				let GbhasUpdate = false;
 				let arrfphistory = [];
 				let isHidden = 0;
+				let pageNum = Math.ceil(positionCounter / itemsPerPage);
+				let pagePosition = positionCounter - ((pageNum - 1)  * itemsPerPage);
+
+
+				++positionCounter;
 
 				if (undefined !== LGData[i]['reward']) {
 					Medals = MainParser.round(LGData[i]['reward']['resources'] !== undefined && LGData[i]['reward']['resources']['medals'] !== undefined ?  LGData[i]['reward']['resources']['medals'] * arc : 0);
@@ -545,7 +559,7 @@ let Investment = {
 					CurrentGB = undefined;
 				}
 
-				// LG gefunden mit investierten FP => Wert bekannt
+				// GB found with invested FP => value known
 				if (CurrentGB !== undefined && CurrentGB['current_progress'] < CurrentProgress)
 				{
 					GbhasUpdate = true;
@@ -611,7 +625,16 @@ let Investment = {
 						medals: Medals,
 						blueprints: Blueprints,
 						ishidden: isHidden,
-						increase: increase
+						increase: increase,
+						page: '' + pageNum + '-' + pagePosition,
+					});
+				} else {
+					UpdatedList = true;
+					// only refresh position
+					await Investment.RefreshInvestmentDB({
+						playerId: PlayerID,
+						entity_id: EntityID,
+						page: '' + pageNum + '-' + pagePosition,
 					});
 				}
 			}
@@ -631,6 +654,7 @@ let Investment = {
 		}
 
 		if (UpdatedList && $('#Investment').length !== 0) {
+			// todo: keep sorting!
 			Investment.Show();
 		}
 
@@ -716,6 +740,16 @@ let Investment = {
 		return arr.filter(function (ele) {
 			return ele !== value;
 		});
+	},
+
+	mergeInvestment: (current, newValues, keys) => {
+		keys.forEach(function(key){
+			if (newValues[key] !== undefined) {
+				current[key] = newValues[key];
+			}
+		});
+
+		return current;
 	},
 
 
