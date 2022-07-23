@@ -102,6 +102,13 @@
 		"sort": 16
 	},
 	{
+		"name": "ShowPossibleInvestments",
+		"status": false,
+		"doubleoptin": true,
+		"group": "Boxes",
+		"sort": 22
+	},
+	{
 		"name": "ShowAztecHelper",
 		"status": true,
 		"group": "Boxes",

@@ -805,7 +805,7 @@ let Investment = {
 		*/
 		// easiest case, already invested and profit is more then half of rest
 		let restToPut = contribution['max_progress'] - contribution['current_progress'];
-		if (restToPut / 2 < contribution['currentFp'] + contribution['profit']) {
+		if (Math.ceil(restToPut / 2) < contribution['currentFp'] + contribution['profit']) {
 			return true;
 		}
 		// todo:

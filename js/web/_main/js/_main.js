@@ -474,6 +474,10 @@ GetFights = () =>{
 				MainParser.UpdatePlayerDict(data.responseData.guildMembers, 'PlayerList', 'getClanMemberList');
 			if (data.responseData.neighbours) 
 				MainParser.UpdatePlayerDict(data.responseData.neighbours, 'PlayerList', 'getNeighborList');
+		} else if (data.requestMethod === 'getOtherPlayerVO') {
+			MainParser.UpdatePlayerDict(data.responseData, 'PlayerVO');
+		} else if (data.requestMethod === 'getEventsPaginated') {
+			MainParser.UpdatePlayerDict(data.responseData, 'Events');
 		}
 	});
 
@@ -510,6 +514,20 @@ GetFights = () =>{
 			Investment.UpdateData(data.responseData, false);
 		}
 
+		if (data.responseData[0].player.player_id === ExtPlayerID || !Settings.GetSetting('ShowPossibleInvestments')) {
+			return;
+		}
+
+		Calculator.Overview = data.responseData;
+		Calculator.DetailViewIsNewer = false;
+
+		$('#calculator-Btn').removeClass('hud-btn-red');
+		$('#calculator-Btn-closed').remove();
+
+		// wenn schon offen, den Inhalt updaten
+		if ($('#LGInvestmentOverviewBox').is(':visible')) {
+			Calculator.ShowPossibleInvestments(false);
+		}
 	});
 
 	// a GB of a player is opened
@@ -619,7 +637,7 @@ GetFights = () =>{
 			}
 		}
 
-		// Fremdes LG
+		// stranger LG
 		if (CityMapEntity.responseData[0].player_id !== ExtPlayerID && !IsLevelScroll)
 		{
 			$('#calculator-Btn').removeClass('hud-btn-red');
@@ -627,10 +645,11 @@ GetFights = () =>{
 
 			Calculator.Rankings = Rankings;
 			Calculator.CityMapEntity = CityMapEntity['responseData'][0];
+			Calculator.DetailViewIsNewer = true;
 
 			// wenn schon offen, den Inhalt updaten
-			if ($('#costCalculator').length > 0) {
-				Calculator.Show();
+			if ($('#costCalculator').is(':visible') || ($('#LGInvestmentOverviewBox').is(':visible'))) {
+				Calculator.Show(Rankings, CityMapEntity.responseData[0]);
 			}
 		}
 

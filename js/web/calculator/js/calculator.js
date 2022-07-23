@@ -22,8 +22,12 @@ let Calculator = {
 	ForderBonus: 90,
     SoundFile: new Audio(extUrl + 'vendor/sounds/message.mp3'),
     PlayerName: undefined,
+	PlayerID: undefined,
     LastPlayerID: 0,
     PlayInfoSound: null,
+	PlayOverviewInfoSound: null,
+	DetailViewIsNewer: false,
+	OpenedFromOverview: undefined,
 	Rankings : undefined,
 	CityMapEntity : undefined,
 	LastRecurringQuests: undefined,
@@ -31,6 +35,120 @@ let Calculator = {
 	DefaultButtons: [
 		80, 85, 90, 'ark'
 	],
+	Overview : undefined,
+	Initalized: false,
+
+	/**
+	 * Show calculator
+	 *
+	 */
+	Open: () => {
+
+		// Nur Übersicht verfügbar
+		if (Calculator.Overview !== undefined && Calculator.CityMapEntity === undefined) {
+			Calculator.ShowPossibleInvestments(false);
+		}
+
+		// Nur Detailansicht verfügbar
+		else if (Calculator.CityMapEntity !== undefined && Calculator.Overview === undefined) {
+			Calculator.Show();
+		}
+
+		// Beide verfügbar
+		else if (Calculator.CityMapEntity !== undefined && Calculator.Overview !== undefined) {
+			let BuildingInfo = Calculator.Overview.find(obj => {
+				return obj['city_entity_id'] === Calculator.CityMapEntity['cityentity_id'] && obj['player']['player_id'] === Calculator.CityMapEntity['player_id'];
+			});
+
+			// Beide gehören zum selben Spieler => beide anzeigen
+			if (BuildingInfo !== undefined) {
+				Calculator.Show();
+				Calculator.ShowPossibleInvestments();
+			}
+
+			// Unterschiedliche Spieler => Öffne die neuere Ansicht
+			else {
+				if (Calculator.DetailViewIsNewer) {
+					Calculator.Show();
+				}
+				else {
+					Calculator.ShowPossibleInvestments();
+				}
+			}
+		}
+	},
+
+	/**
+	 * Calculator Initialisieren
+	 *
+	 */
+	initCalculator: () => {
+		if (!Calculator.Initialized) {
+			let ct = localStorage.getItem('CalculatorTone');
+
+			if (ct === null) {
+				localStorage.setItem('CalculatorTone', 'deactivated');
+				Calculator.PlayInfoSound = false;
+
+			} else {
+				Calculator.PlayInfoSound = (ct !== 'deactivated');
+			}
+
+			let cot = localStorage.getItem('CalculatorOverviewTone');
+
+			if (cot === null) {
+				localStorage.setItem('CalculatorOverviewTone', 'deactivated');
+				Calculator.PlayOverviewInfoSound = false;
+
+			} else {
+				Calculator.PlayOverviewInfoSound = (cot !== 'deactivated');
+			}
+
+			let ab = localStorage.getItem('CalculatorForderBonus');
+
+			// alten Wert übernehmen, wenn vorhanden
+			if (ab !== null) {
+				Calculator.ForderBonus = parseFloat(ab);
+			}
+
+			Calculator.CurrentPlayer = parseInt(localStorage.getItem('current_player_id'));
+
+			Calculator.OpenedFromOverview = false;
+
+			Calculator.Initalized = true;
+		}
+
+		Calculator.CurrentPlayer = parseInt(localStorage.getItem('current_player_id'));
+		Calculator.PlayerID = (Calculator.DetailViewIsNewer ? Calculator.CityMapEntity['player_id'] : Calculator.Overview['0']['player']['player_id']);
+
+		// If player has changed then reset BuildingName/PlayerName
+		if (Calculator.PlayerID !== Calculator.LastPlayerID) {
+			Calculator.PlayerName = undefined;
+			Calculator.ClanName = undefined;
+		}
+
+		// overview available
+		if (Calculator.Overview !== undefined && Calculator.CityMapEntity !== undefined) {
+			// Übersicht laden + passendes LG
+			let BuildingInfo = Calculator.Overview.find(obj => {
+				return obj['city_entity_id'] === Calculator.CityMapEntity['cityentity_id'];
+			});
+
+			// Übersicht vom richtigen Spieler vorhanden => Spielername auslesen
+			if (BuildingInfo !== undefined && BuildingInfo['player']['player_id'] === Calculator.PlayerID) {
+				Calculator.OpenedFromOverview = true;
+				Calculator.PlayerName = BuildingInfo['player']['name'];
+			}
+		}
+
+		if (Calculator.PlayerName === undefined && PlayerDict[Calculator.PlayerID] !== undefined) {
+			Calculator.PlayerName = PlayerDict[Calculator.PlayerID]['PlayerName'];
+		}
+		if (PlayerDict[Calculator.PlayerID] !== undefined && PlayerDict[Calculator.PlayerID]['ClanName'] !== undefined) {
+			Calculator.ClanName = PlayerDict[Calculator.PlayerID]['ClanName'];
+		}
+
+	},
 
 	/**
 	 * Show calculator
@@ -39,6 +157,7 @@ let Calculator = {
 	 * @constructor
 	 */
 	Show: (action = '') => {
+		Calculator.initCalculator();
         // moment.js global setzen
         moment.locale(MainParser.Language);
 
@@ -51,9 +170,11 @@ let Calculator = {
 
 		Calculator.ForderBonusPerConversation = (localStorage.getItem('CalculatorForderBonusPerConversation') !== 'false');
 
-        // Wenn die Box noch nicht da ist, neu erzeugen und in den DOM packen
+        // If the box isn&#39;t there yet, create it again and pack it in the DOM
         if ($('#costCalculator').length === 0) {
-            let spk = localStorage.getItem('CalculatorTone');
+            /*
+            // moved into initCalculator
+        	let spk = localStorage.getItem('CalculatorTone');
 
             if (spk === null) {
                 localStorage.setItem('CalculatorTone', 'deactivated');
@@ -61,7 +182,8 @@ let Calculator = {
 
             } else {
                 Calculator.PlayInfoSound = (spk !== 'deactivated');
-            }		
+            }
+            */
 
             HTML.Box({
 				id: 'costCalculator',
@@ -77,7 +199,8 @@ let Calculator = {
 			// CSS in den DOM prügeln
 			HTML.AddCssFile('calculator');
 
-			Calculator.CurrentPlayer = parseInt(localStorage.getItem('current_player_id'));
+			// moved into initCalculator
+			// Calculator.CurrentPlayer = parseInt(localStorage.getItem('current_player_id'));
 
 			// schnell zwischen den Prozenten wechseln
 			$('#costCalculator').on('click', '.btn-toggle-arc', function () {
@@ -134,7 +257,7 @@ let Calculator = {
 		let PlayerID = Calculator.CityMapEntity['player_id'],
             h = [];
 
-        // Wenn sich Spieler geändert hat, dann BuildingName/PlayerName zurücksetzen
+        // If player has changed then reset BuildingName/PlayerName
 		if (Calculator.CityMapEntity['player_id'] !== Calculator.LastPlayerID) {
 			Calculator.PlayerName = undefined;
 			Calculator.ClanName = undefined;
@@ -147,7 +270,7 @@ let Calculator = {
 			Calculator.ClanName = PlayerDict[PlayerID]['ClanName'];
 		}
 
-        // BuildingName konnte nicht aus der BuildingInfo geladen werden
+        // BuildingName could not be loaded from BuildingInfo
 		let BuildingName = MainParser.CityEntities[Calculator.CityMapEntity['cityentity_id']]['name'];
 		let Level = (Calculator.CityMapEntity['level'] !== undefined ? Calculator.CityMapEntity['level'] : 0);
 		let MaxLevel = (Calculator.CityMapEntity['max_level'] !== undefined ? Calculator.CityMapEntity['max_level'] : 0);
@@ -212,10 +335,13 @@ let Calculator = {
 
         h.push('</div>');
 
-        // Tabelle zusammen fummeln
+        // fumble table together
 		h.push('<table id="costTableFordern" style="width:100%" class="foe-table"></table>');
+		// h.push('<table id="costTableBPMeds" class="foe-table"></table>');
+		h.push('<strong>' + i18n('Boxes.Calculator.AggressiveInvestment') + '</strong><br>');
+		h.push('<table id="costTableAggressiveInvestment" class="foe-table"></table></td>');
 
-        // Wieviel fehlt noch bis zum leveln?
+		// Wieviel fehlt noch bis zum leveln?
 		let rest = (Calculator.CityMapEntity['state']['invested_forge_points'] === undefined ? Calculator.CityMapEntity['state']['forge_points_for_level_up'] : Calculator.CityMapEntity['state']['forge_points_for_level_up'] - Calculator.CityMapEntity['state']['invested_forge_points']);
 
 		h.push('<div class="text-center" style="margin-top:5px;margin-bottom:5px;"><em>' + i18n('Boxes.Calculator.Up2LevelUp') + ': <span id="up-to-level-up" style="color:#FFB539">' + HTML.Format(rest) + '</span> ' + i18n('Boxes.Calculator.FP') + '</em></div>');
@@ -288,6 +414,8 @@ let Calculator = {
 	 */
 	CalcBody: ()=> {
 		let hFordern = [],
+			// hBPMeds = [],
+			hAggressiveInvestment = [],
 			BestKurs = 999999,
 			arc = 1 + (MainParser.ArkBonus / 100),
 			ForderArc = 1 + (Calculator.ForderBonus / 100);
@@ -314,6 +442,8 @@ let Calculator = {
 			ForderRankCosts = [],
 			SaveRankCosts = [],
 			Einzahlungen = [],
+			BestKursNettoFP = 0,
+			BestKursEinsatz = 999999,
 			BestGewinn = -999999,
 			SaveLastRankCost = undefined;
 
@@ -474,6 +604,12 @@ let Calculator = {
 			'<th><span class="medal" title="' + HTML.i18nTooltip(i18n('Boxes.Calculator.Meds')) + '"></span></th>' +
 			'</thead>');
 
+		hAggressiveInvestment.push('<thead>' +
+			'<th><span class="forgepoints" title="' + HTML.i18nTooltip(i18n('Boxes.Calculator.Commitment')) + '"></span></th>' +
+			'<th>' + i18n('Boxes.Calculator.Profit') + '</th>' +
+			'<th>' + i18n('Boxes.Calculator.Rate') + '</th>' +
+			'</thead>');
+
 		for (let Rank = 0; Rank < ForderRankCosts.length; Rank++) {
 			let ForderCosts = (ForderStates[Rank] === 'Self' ? Einzahlungen[Rank] : ForderFPRewards[Rank]),
 				SaveCosts = (SaveStates[Rank] === 'Self' ? Einzahlungen[Rank] : SaveRankCosts[Rank]);
@@ -505,7 +641,11 @@ let Calculator = {
 
 				GewinnClass = (ForderGewinn >= 0 ? 'success' : 'error'), //Default: Grün wenn >= 0 sonst rot
 				GewinnText = HTML.Format(ForderGewinn), //Default: Gewinn
-				GewinnTooltip;
+				GewinnTooltip,
+
+				KursClass,
+				KursText,
+				KursTooltip = [];
 
 			if (ForderFPRewards[Rank] - EigenBetrag > StrategyPoints.AvailableFP) {
 				EinsatzTooltip.push(HTML.i18nReplacer(i18n('Boxes.Calculator.TTForderFPStockLow'), { 'fpstock': StrategyPoints.AvailableFP, 'costs': ForderFPRewards[Rank] - EigenBetrag, 'tooless': (ForderFPRewards[Rank] - EigenBetrag - StrategyPoints.AvailableFP) }));
@@ -550,7 +690,7 @@ let Calculator = {
 				}
 
 				if (ForderGewinn > 0) {
-					GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTProfitSelf'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'paid': Einzahlungen[Rank], 'profit': ForderGewinn })]
+					GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTProfitSelf'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'paid': Einzahlungen[Rank], 'profit': ForderGewinn, 'safe': SaveRankCosts[Rank] })]
 				}
 				else {
 					GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTLossSelf'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'paid': Einzahlungen[Rank], 'loss': 0 - ForderGewinn })]
@@ -601,6 +741,12 @@ let Calculator = {
 				GewinnTooltip = [];
 			}
 
+			//else if (ForderStates[Rank] === 'LevelWarning') {
+			//	let ToolTip = ;
+			//}
+
+
+
 			// BP+Meds
 
 			RowClass = '';
@@ -624,7 +770,6 @@ let Calculator = {
 				RowClass = 'bg-green';
 			}
 
-
 			hFordern.push('<tr class="' + RowClass + '">');
 			hFordern.push('<td class="text-center"><strong class="' + RankClass + ' td-tooltip" title="' + HTML.i18nTooltip(RankTooltip.join('<br>')) + '">' + RankText + '</strong></td>');
 			hFordern.push('<td class="text-center"><strong class="' + EinsatzClass + ' td-tooltip" title="' + HTML.i18nTooltip(EinsatzTooltip.join('<br>')) + '">' + EinsatzText + '</strong></td>');
@@ -632,9 +777,106 @@ let Calculator = {
 			hFordern.push('<td class="text-center">' + HTML.Format(BPRewards[Rank]) + '</td>');
 			hFordern.push('<td class="text-center">' + HTML.Format(MedalRewards[Rank]) + '</td>');
 			hFordern.push('</tr>');
+			// AggressiveInvestment
+
+			EinsatzClass = (SaveRankCosts[Rank] > StrategyPoints.AvailableFP ? 'error' : ''); //Default: rot wenn Vorrat nicht ausreichend, sonst gelb
+			EinsatzText = HTML.Format(SaveRankCosts[Rank]) //Default: Einsatz
+			EinsatzTooltip = [];
+
+			GewinnClass = (SaveGewinn >= 0 ? 'success' : 'error'); //Default: Grün wenn >= 0 sonst rot
+			GewinnText = HTML.Format(SaveGewinn); //Default: Gewinn
+			GewinnTooltip = [];
+
+			KursClass = (SaveGewinn >= 0 ? 'success' : 'error'); //Default: Grün wenn Gewinn sonst rot
+			KursText = (SaveGewinn >= 0 ? Calculator.FormatKurs(Kurs) : '-'); //Default: Kurs anzeigen bei Gewinn
+			KursTooltip = [];
+
+			if (SaveRankCosts[Rank] > StrategyPoints.AvailableFP) {
+				EinsatzTooltip.push(HTML.i18nReplacer(i18n('Boxes.Calculator.TTAggressiveInvestmentFPStockLow'), { 'fpstock': StrategyPoints.AvailableFP, 'costs': SaveRankCosts[Rank], 'tooless': (SaveRankCosts[Rank] - StrategyPoints.AvailableFP) }));
+			}
+
+			if (SaveGewinn >= 0) {
+				GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTProfit'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'costs': SaveCosts, 'profit': SaveGewinn })]
+			}
+			else {
+				GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTLoss'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'costs': SaveCosts, 'loss': 0-SaveGewinn })]
+			}
+
+			if (SaveStates[Rank] === 'Self') {
+				RowClass = 'info-row';
+
+				RankClass = 'info';
+
+				if (Einzahlungen[Rank] < SaveRankCosts[Rank]) {
+					EinsatzClass = 'error';
+					EinsatzTooltip.push(HTML.i18nReplacer(i18n('Boxes.Calculator.TTPaidTooLess'), { 'paid': Einzahlungen[Rank], 'topay': SaveRankCosts[Rank], 'tooless': SaveRankCosts[Rank] - Einzahlungen[Rank] }));
+				}
+				else {
+					EinsatzClass = 'info';
+				}
+
+				EinsatzText = HTML.Format(Einzahlungen[Rank]);
+				if (Einzahlungen[Rank] < SaveRankCosts[Rank]) {
+					EinsatzText += '/' + HTML.Format(SaveRankCosts[Rank]);
+				}
+
+				GewinnClass = 'info';
+				if (SaveGewinn > 0) {
+					GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTProfitSelf'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'paid': SaveCosts, 'profit': SaveGewinn })]
+				}
+				else {
+					GewinnTooltip = [HTML.i18nReplacer(i18n('Boxes.Calculator.TTLossSelf'), { 'nettoreward': FPNettoRewards[Rank], 'arcfactor': (100 + MainParser.ArkBonus), 'bruttoreward': FPRewards[Rank], 'paid': SaveCosts, 'loss': 0 - SaveGewinn })]
+				}
+
+				KursClass = 'info';
+				KursText = Calculator.FormatKurs(Kurs);
+				KursTooltip.push(HTML.i18nReplacer(i18n('Boxes.Calculator.TTRate'), { 'costs': Einzahlungen[Rank], 'nettoreward': FPNettoRewards[Rank], 'rate': Kurs }));
+			}
+			else if (SaveStates[Rank] === 'NegativeProfit') {
+				RowClass = 'bg-red';
+			}
+			else if (SaveStates[Rank] === 'LevelWarning') {
+				RowClass = 'bg-yellow';
+
+				EinsatzTooltip.push(i18n('Boxes.Calculator.LevelWarning'));
+			}
+			else if (SaveStates[Rank] === 'Profit') {
+				RowClass = 'bg-green';
+
+				KursTooltip.push(HTML.i18nReplacer(i18n('Boxes.Calculator.TTRate'), { 'costs': SaveRankCosts[Rank], 'nettoreward': FPNettoRewards[Rank], 'rate': Kurs }));
+
+				Calculator.PlaySound();
+			}
+			else { // NotPossible/WorseProfit
+				RowClass = 'text-grey';
+
+				EinsatzText = '-';
+
+				GewinnText = '-';
+				GewinnTooltip = [];
+
+				KursText = '-';
+			}
+
+			hAggressiveInvestment.push('<tr class="' + RowClass + '">');
+			hAggressiveInvestment.push('<td class="text-center"><strong class="' + EinsatzClass + ' td-tooltip" title="' + HTML.i18nTooltip(EinsatzTooltip.join('<br>')) + '">' + EinsatzText + '</strong></td>');
+			hAggressiveInvestment.push('<td class="text-center"><strong class="' + GewinnClass + ' td-tooltip" title="' + HTML.i18nTooltip(GewinnTooltip.join('<br>')) + '">' + GewinnText + '</strong></td>');
+			hAggressiveInvestment.push('<td class="text-center"><strong class="' + KursClass + ' td-tooltip" title="' + HTML.i18nTooltip(KursTooltip.join('<br>')) + '">' + KursText + '</strong></td>');
+			hAggressiveInvestment.push('</tr>');
 		}
 
 		$('#costTableFordern').html(hFordern.join(''));
+		$('#costTableAggressiveInvestment').html(hAggressiveInvestment.join(''));
+
+		// todo: do I need this?
+		// Calculator.RefreshGreatBuildingsDB({
+		// 	playerId: Calculator.CityMapEntity['player_id'],
+		// 	name: Calculator.CityMapEntity['cityentity_id'],
+		// 	level: Calculator.CityMapEntity['level'],
+		// 	currentFp: Calculator.CityMapEntity['state']['invested_forge_points'],
+		// 	bestRateNettoFp: BestKursNettoFP,
+		// 	bestRateCosts: BestKursEinsatz
+		// });
 
 		$('.td-tooltip').tooltip({
 			html: true,
@@ -642,6 +884,41 @@ let Calculator = {
 		});
 	},
 		
+
+	/**
+	 * Aktualisiert die GBs in der IndexDB
+	 *
+	 * */
+	// RefreshGreatBuildingsDB: async(GreatBuilding) => {
+	// 	await IndexDB.addUserFromPlayerDictIfNotExists(GreatBuilding['playerId'], true);
+	//
+	// 	let CurrentGB = await IndexDB.db.greatbuildings
+	// 		.where({ playerId: GreatBuilding['playerId'], name: GreatBuilding['name'] })
+	// 		.first();
+	//
+	// 	if (CurrentGB === undefined) {
+	// 		await IndexDB.db.greatbuildings.add({
+	// 			playerId: GreatBuilding['playerId'],
+	// 			name: GreatBuilding['name'],
+	// 			level: GreatBuilding['level'],
+	// 			currentFp: GreatBuilding['currentFp'],
+	// 			bestRateNettoFp: GreatBuilding['bestRateNettoFp'],
+	// 			bestRateCosts: GreatBuilding['bestRateCosts'],
+	// 			date: new Date()
+	// 		});
+	// 	}
+	// 	else {
+	// 		await IndexDB.db.greatbuildings.update(CurrentGB.id, {
+	// 			level: GreatBuilding['level'],
+	// 			currentFp: GreatBuilding['currentFp'],
+	// 			bestRateNettoFp: GreatBuilding['bestRateNettoFp'],
+	// 			bestRateCosts: GreatBuilding['bestRateCosts'],
+	// 			date: new Date()
+	// 		});
+	// 	}
+	// 	/* Ende Neuer Code: */
+	// },
+
 
 	/**
 	 * Formats the course
@@ -775,5 +1052,205 @@ let Calculator = {
 			// reload box
 			Calculator.Show();
 		});
+	},
+
+
+	/**
+	 * Übersicht der LGs scannen
+	 *
+	 * @param DisableAudio
+	 */
+	ShowPossibleInvestments: async(DisableAudio)=> {
+
+		let arc = ((parseFloat(MainParser.ArkBonus) + 100) / 100)
+
+		// nix drin, raus
+		if (Calculator.Overview === undefined)
+		{
+			return;
+		}
+
+		Calculator.initCalculator();
+
+		// Wenn die Box noch nicht da ist, neu erzeugen und in den DOM packen
+		if( $('#LGInvestmentOverviewBox').length === 0 )
+		{
+
+			HTML.Box({
+				id: 'LGInvestmentOverviewBox',
+				title: i18n('Boxes.LGInvestmentOverviewBox.Title'),
+				auto_close: true,
+				dragdrop: true,
+				minimize: true,
+				speaker: 'CalculatorOverviewTone'
+			});
+
+			// CSS in den DOM prügeln
+			HTML.AddCssFile('calculator');
+
+			$('#LGInvestmentOverviewBox').on('click', '#CalculatorOverviewTone', function () {
+
+				let disabled = $(this).hasClass('deactivated');
+
+				localStorage.setItem('CalculatorOverviewTone', (disabled ? '' : 'deactivated'));
+				Calculator.PlayOverviewInfoSound = !!disabled;
+
+				if (disabled === true) {
+					$('#CalculatorOverviewTone').removeClass('deactivated');
+				} else {
+					$('#CalculatorOverviewTone').addClass('deactivated');
+				}
+			});
+		}
+
+
+		let h = [];
+
+		h.push('<div class="text-center dark-bg" style="padding:5px 0 3px;">');
+		h.push('<p class="head-bar">');
+
+		if (Calculator.PlayerName) {
+			h.push('<span class="player-name"><strong>' + MainParser.GetPlayerLink(Calculator.PlayerID, Calculator.PlayerName));
+
+			if (Calculator.ClanName) {
+				h.push(`[${Calculator.ClanName}]`);
+			}
+
+			h.push('</strong></span>');
+		}
+
+
+		h.push('<span class="color-description">?' +
+					'<span>' +
+						'<span style="color:#FFB539">' + HTML.i18nTooltip(i18n('Boxes.LGInvestmentOverviewBox.Tooltip.FoundNew')) + '</span>' +
+						'<span style="color:#29b206">' + HTML.i18nTooltip(i18n('Boxes.LGInvestmentOverviewBox.Tooltip.FoundAgain')) + '</span>' +
+						'<span style="color:#FF6000">' + HTML.i18nTooltip(i18n('Boxes.LGInvestmentOverviewBox.Tooltip.NoPayment')) + '</span>' +
+					'</span>' +
+				'</span>' +
+			'</p>');
+
+		if (!PlayerDict[Calculator.Overview['0']['player']['player_id']].IsActive) {
+			h.push(`<p><strong class="error">${i18n(`Boxes.Calculator.${PlayerDict[Calculator.Overview['0']['player']['player_id']].IsActive === undefined ? 'PlayerActivityUnknown' : 'PlayerInactive'}`)}<strong></p>`);
+		}
+
+		h.push('</div>');
+		h.push('<table id="OverviewTable" class="foe-table">');
+
+		h.push('<thead>' +
+			'<tr>' +
+				'<th>' + i18n('Boxes.LGInvestmentOverviewBox.Building') + '</th>' +
+				'<th class="text-center">' + i18n('Boxes.LGInvestmentOverviewBox.Level') + '</th>' +
+				'<th class="text-center">' + i18n('Boxes.LGInvestmentOverviewBox.PaidTotal') + '</th>' +
+				'<th class="text-center">' + i18n('Boxes.LGInvestmentOverviewBox.Profit') + '</th>' +
+				'<th class="text-center">' + i18n('Boxes.LGInvestmentOverviewBox.Rate') + '</th>' +
+			'</tr>' +
+		'</thead>');
+
+		let PlayAudio = false,
+			LGFound = false;
+
+		// alle LGs der Übersicht durchsteppen
+		for (let i in Calculator.Overview)
+		{
+			if (Calculator.Overview.hasOwnProperty(i))
+			{
+				let PlayerID = Calculator.Overview[i]['player']['player_id'],
+					EntityID = Calculator.Overview[i]['city_entity_id'],
+					GBName = Calculator.Overview[i]['name'],
+					GBLevel = Calculator.Overview[i]['level'],
+					CurrentProgress = Calculator.Overview[i]['current_progress'],
+					MaxProgress = Calculator.Overview[i]['max_progress'],
+					Rank = Calculator.Overview[i]['rank'];
+
+				let Gewinn = undefined,
+					BestKurs = undefined,
+					StrongClass;
+
+				let CurrentGB = await IndexDB.db.greatbuildings
+					.where({ playerId: PlayerID, name: EntityID })
+					.first();
+
+				// LG gefunden mit selbem Level und investierten FP => Wert bekannt
+				if (CurrentGB != undefined && CurrentGB['level'] === GBLevel && CurrentGB['currentFp'] == CurrentProgress) {
+					BestKursNettoFP = CurrentGB['bestRateNettoFp'];
+					BestKursEinsatz = CurrentGB['bestRateCosts'];
+					BestKurs = MainParser.round(BestKursEinsatz / BestKursNettoFP * 1000) / 10;
+					Gewinn = MainParser.round(BestKursNettoFP * arc) - BestKursEinsatz;
+				}
+
+				let EraName = GreatBuildings.GetEraName(EntityID);
+
+				if (CurrentProgress === undefined)
+				{
+					CurrentProgress = 0;
+				}
+
+				let Era = Technologies.Eras[EraName];
+				let P1 = 0;
+				if (GreatBuildings.Rewards[Era] && GreatBuildings.Rewards[Era][GBLevel]) {
+					P1 = GreatBuildings.Rewards[Era][GBLevel];
+				}
+
+				if (Rank === undefined && P1 * arc >= (MaxProgress - CurrentProgress) / 2) // Noch nicht eingezahlt und Gewinn theoretisch noch möglich
+				{
+					if (Gewinn === undefined || Gewinn >= 0)
+					{
+						LGFound = true;
+						let GewinnString = undefined,
+							KursString = undefined;
+
+						if (CurrentProgress === 0)
+						{
+							StrongClass = ' class="warning"'; // Möglicherweise nicht freigeschaltet
+							GewinnString = HTML.Format(MainParser.round(P1 * arc) - Math.ceil((MaxProgress - CurrentProgress) / 2));
+							KursString = Calculator.FormatKurs(MainParser.round(MaxProgress / P1 / 2 * 1000) / 10);
+						}
+						else if (Gewinn === undefined)
+						{
+							StrongClass = '';
+							PlayAudio = true;
+							GewinnString = '???';
+							KursString = '???%';
+						}
+						else
+						{
+							StrongClass = ' class="success"';
+							PlayAudio = true;
+							GewinnString = HTML.Format(Gewinn);
+							KursString = Calculator.FormatKurs(BestKurs);
+						}
+
+						h.push('<tr>');
+						h.push('<td><strong' + StrongClass + '>' + (i-0+1) + ': ' + GBName + '</strong></td>');
+						h.push('<td class="text-center"><strong' + StrongClass + '>' + GBLevel + '</strong></td>');
+						h.push('<td class="text-center"><strong' + StrongClass + '>' + HTML.Format(CurrentProgress) + ' / ' + HTML.Format(MaxProgress) + '</strong></td>');
+						h.push('<td class="text-center"><strong' + StrongClass + '>' + GewinnString + '</strong></td>');
+						h.push('<td class="text-center"><strong' + StrongClass + '>' + KursString + '</strong></td>');
+						h.push('</tr>');
+					}
+				}
+			}
+		}
+
+		// Gibt was zu holen
+		if (LGFound)
+		{
+			if (PlayAudio && !DisableAudio)
+			{
+				Calculator.PlayOverviewSound();
+			}
+
+		}
+
+		// gibt nichts zu holen
+		else {
+				h.push('<tr>');
+			h.push('<td colspan="5" class="text-center no-investments-possible" style="padding:2px 0 3px;"><strong>');
+
+			h.push(i18n('Boxes.LGInvestmentOverviewBox.NoInvestmentsPossible')+ '</strong></td></tr>');
+		}
+		h.push('</table>');
+
+		$('#LGInvestmentOverviewBox').find('#LGInvestmentOverviewBoxBody').html(h.join(''));
 	}
 };
