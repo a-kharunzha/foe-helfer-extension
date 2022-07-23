@@ -219,9 +219,11 @@ let Investment = {
 			const contribution = data[x];
 			let Profit = contribution['profit'];
 			let RealProfit = Profit - contribution['currentFp'];
-			let RealProfitClass = contribution['currentFp'] >= contribution['max_progress'] - contribution['current_progress'] ? 'success' : 'error';
+			let restToPut = contribution['max_progress'] - contribution['current_progress'];
 
-			if (contribution['currentFp'] < contribution['max_progress'] - contribution['current_progress'])
+			let RealProfitClass = contribution['currentFp'] >= restToPut ? 'success' : 'error';
+
+			if (contribution['currentFp'] < restToPut)
 			{
 				RealProfitClass = 'warning';
 			}
@@ -242,6 +244,15 @@ let Investment = {
 			let hiddenClass = '';
 			let lastInvestmentIncreaseDate = null;
 			let history = {};
+
+			// todo: temporal solution with RealProfitClass
+			// todo: it is NOT correct! If we put more then left to put, that does not mean, that no one can overbid us with 2 FP
+			// example:
+			// rest to put: 32
+			// invested: 11
+			// profit: 8
+			// but, we have another investor with invested 10. So to make the place safe, we should put 8 points more
+			let snippableClass = Investment.isSnippable(contribution) && (RealProfitClass == 'warning') ? 'bg-bright' : '';
 
 			if (contribution['fphistory'] !== '[]')
 			{
@@ -268,7 +279,7 @@ let Investment = {
 
 			hiddenClass=(showHiddenGb && isHidden) ? ' ishidden' : (isHidden) ? ' ishidden hide' : '';
 
-			h.push(`<tr id="invhist${x}" data-id="${contribution['id']}" data-max-progress="${contribution['max_progress']}" data-detail='${JSON.stringify(history)}' class="${hasFpHistoryClass}${newerClass}${hiddenClass}">` +
+			h.push(`<tr id="invhist${x}" data-id="${contribution['id']}" data-max-progress="${contribution['max_progress']}" data-detail='${JSON.stringify(history)}' class="${hasFpHistoryClass}${newerClass}${hiddenClass}${snippableClass}">` +
 				`<td >${contribution['page']}</td>` +
 				`<td class="case-sensitive" data-text="${contribution['playerName'].toLowerCase().replace(/[\W_ ]+/g, "")}"><img style="max-width: 22px" src="${MainParser.InnoCDN + 'assets/shared/avatars/' + (MainParser.PlayerPortraits[contribution['Avatar']] || 'portrait_433')}.jpg" alt="${contribution['playerName']}"> ${MainParser.GetPlayerLink(contribution['playerId'], contribution['playerName'])}</td>`);
 			h.push('<td class="case-sensitive" data-text="' + contribution['gbname'].toLowerCase().replace(/[\W_ ]+/g, "") + '">' + contribution['gbname'] + ' (' + contribution['level'] + ')</td>');
@@ -341,8 +352,6 @@ let Investment = {
 			let investmentTable = $('#InvestmentTable');
 			investmentTable.tableSorter();
 			investmentTable.on('sorted', function(event, column, direction, type) {
-				console.info('sorted');
-				console.log( column, direction , type);
 				// todo: extract saving one/multiple value(s) into function and reuse for all duplicated places
 				let InvestmentSettings = JSON.parse(localStorage.getItem('InvestmentSettings') || '{}');
 				InvestmentSettings['sorting'] = {
@@ -551,6 +560,7 @@ let Investment = {
 				let isHidden = 0;
 				let pageNum = Math.ceil(positionCounter / itemsPerPage);
 				let pagePosition = positionCounter - ((pageNum - 1)  * itemsPerPage);
+				let page = '' + pageNum + '-' + pagePosition;
 
 
 				++positionCounter;
@@ -578,6 +588,10 @@ let Investment = {
 						})
 						.delete();
 					CurrentGB = undefined;
+				}
+
+				if (CurrentGB !== undefined && CurrentGB['page'] !== page){
+					GbhasUpdate = true;
 				}
 
 				// GB found with invested FP => value known
@@ -647,15 +661,7 @@ let Investment = {
 						blueprints: Blueprints,
 						ishidden: isHidden,
 						increase: increase,
-						page: '' + pageNum + '-' + pagePosition,
-					});
-				} else {
-					UpdatedList = true;
-					// only refresh position
-					await Investment.RefreshInvestmentDB({
-						playerId: PlayerID,
-						entity_id: EntityID,
-						page: '' + pageNum + '-' + pagePosition,
+						page: page,
 					});
 				}
 			}
@@ -771,6 +777,42 @@ let Investment = {
 		});
 
 		return current;
+	},
+
+	isSnippable: (contribution) => {
+		/*
+		let updateKeys = [
+			'currentFp',
+			'gbname',
+			'current_progress',
+			'profit',
+			'medals',
+			'blueprints',
+			'rank',
+			'fphistory',
+			'increase',
+			'ishidden',
+			'page'
+		];
+		let createKeys = [
+			'playerId',
+			'playerName',
+			'Avatar',
+			'entity_id',
+			'level',
+			'max_progress',
+		];
+		*/
+		// easiest case, already invested and profit is more then half of rest
+		let restToPut = contribution['max_progress'] - contribution['current_progress'];
+		if (restToPut / 2 < contribution['currentFp'] + contribution['profit']) {
+			return true;
+		}
+		// todo:
+		// check other  more high levels - they can be snippable for more revard
+
+
+		return false;
 	},
 
 

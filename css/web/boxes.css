@@ -377,6 +377,15 @@ table.foe-table tr.bg-green td {
 	background-color: var(--background-table-success);
 }
 
+table.foe-table tr.bg-info td {
+	background-color: var(--background-table-info);
+}
+
+table.foe-table tr.bg-bright td {
+	background-color: var(--background-table-bright);
+}
+
+
 p {
 	margin: 0 0 10px 0;
 }
