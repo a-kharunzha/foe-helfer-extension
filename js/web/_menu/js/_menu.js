@@ -340,7 +340,8 @@ let _menu = {
 
 		let btn_Calc = $('<span />').bind('click', function () {
 			if (Calculator.CityMapEntity) {
-				Calculator.Show('menu');
+				// Calculator.Show('menu');
+				Calculator.Open();
 			}
 		});
 

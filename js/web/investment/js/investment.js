@@ -193,8 +193,9 @@ let Investment = {
 
 		h.push('<th class="is-number text-center" data-type="invest-group">&nbsp;</th>' +
 			'<th class="is-number text-center invest-tooltip" data-type="invest-group" title="' + HTML.i18nTooltip(i18n('Boxes.Investment.Overview.InvestedDesc')) + '">' + i18n('Boxes.Investment.Overview.Invested') + '</th>' +
-			'<th class="is-number text-center invest-tooltip" data-type="invest-group" title="' + HTML.i18nTooltip(i18n('Boxes.Investment.Overview.ProfitDesc')) + '" >' + i18n('Boxes.Investment.Overview.Profit') + '</th>');
-		
+			'<th class="is-number text-center invest-tooltip" data-type="invest-group" title="' + HTML.i18nTooltip(i18n('Boxes.Investment.Overview.ProfitDesc')) + '" >' + i18n('Boxes.Investment.Overview.Profit') + '</th>' +
+			'<th class="is-number text-center invest-tooltip" data-type="invest-group" title="' + HTML.i18nTooltip(i18n('Boxes.Investment.Overview.DiffDesc')) + '" >' + i18n('Boxes.Investment.Overview.Diff') + '</th>');
+
 		if(showMedals)
 		{
 			h.push('<th class="is-number text-center" data-type="invest-group"><span class="medal" title="' + HTML.i18nTooltip(i18n('Boxes.Investment.Overview.Medals')) + '"></span></th>');
@@ -219,11 +220,11 @@ let Investment = {
 			const contribution = data[x];
 			let Profit = contribution['profit'];
 			let RealProfit = Profit - contribution['currentFp'];
-			let restToPut = contribution['max_progress'] - contribution['current_progress'];
+			let restFp = contribution['max_progress'] - contribution['current_progress'];
 
-			let RealProfitClass = contribution['currentFp'] >= restToPut ? 'success' : 'error';
+			let RealProfitClass = contribution['currentFp'] >= restFp ? 'success' : 'error';
 
-			if (contribution['currentFp'] < restToPut)
+			if (contribution['currentFp'] < restFp)
 			{
 				RealProfitClass = 'warning';
 			}
@@ -236,7 +237,7 @@ let Investment = {
 			let DiffText = '';
 			let DiffClass = 'error';
 			let progressWidth = contribution['current_progress'] / contribution['max_progress'] * 100;
-			let restFp = contribution['max_progress'] - contribution['current_progress'];
+
 			let rankImageValue = contribution['rank'] <= 6 ? contribution['rank'] : 6;
 			let isHidden = typeof contribution['ishidden'] !== 'undefined' ? contribution['ishidden'] : 0;
 			let Blueprints = typeof contribution['blueprints'] !== 'undefined' ? contribution['blueprints'] : 0;
@@ -253,6 +254,7 @@ let Investment = {
 			// profit: 8
 			// but, we have another investor with invested 10. So to make the place safe, we should put 8 points more
 			let snippableClass = Investment.isSnippable(contribution) && (RealProfitClass == 'warning') ? 'bg-bright' : '';
+			let diff = Math.ceil(restFp / 2) - contribution['profit'];
 
 			if (contribution['fphistory'] !== '[]')
 			{
@@ -312,7 +314,8 @@ let Investment = {
 			h.push(`<td class="is-number text-center" data-number="${contribution['rank']}"><img class="rank invest-tooltip" src="${extUrl}js/web/x_img/gb_p${rankImageValue}.png" title="${i18n('Boxes.Investment.Rank')} ${contribution['rank']}" /></td>`);
 			h.push(`<td class="is-number text-center gbinvestment" data-number="${contribution['currentFp']}">${contribution['currentFp']}</td>`);
 			h.push(`<td class="is-number text-center gbprofit" data-number="${RealProfit}"><b class="${RealProfitClass}">${RealProfit}</b></td>`);
-			
+			h.push(`<td class="is-number text-center gbdiff" data-number="${diff}"><b >${diff}</b></td>`);
+
 			if(showMedals)
 			{
 				h.push(`<td class="is-number text-center gbmedals" data-number="${Medals}"><b class="${RealProfitClass === 'error' ? 'success' : RealProfitClass}">${HTML.Format(Medals)}</b></td>`);
@@ -805,7 +808,10 @@ let Investment = {
 		*/
 		// easiest case, already invested and profit is more then half of rest
 		let restToPut = contribution['max_progress'] - contribution['current_progress'];
-		if (Math.ceil(restToPut / 2) < contribution['currentFp'] + contribution['profit']) {
+		// let's imagine 200 medals worth paying 1 FP
+		let medalsEquivalentProfit = Math.floor(contribution['medals'] / 200);
+		// contribution['profit'] is return of the investment. It already includes that amount that we put in
+		if (Math.ceil(restToPut / 2) < contribution['profit'] + medalsEquivalentProfit) {
 			return true;
 		}
 		// todo:

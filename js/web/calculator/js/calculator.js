@@ -1149,7 +1149,7 @@ let Calculator = {
 		let PlayAudio = false,
 			LGFound = false;
 
-		// alle LGs der Übersicht durchsteppen
+		// step through all LGs in the overview
 		for (let i in Calculator.Overview)
 		{
 			if (Calculator.Overview.hasOwnProperty(i))

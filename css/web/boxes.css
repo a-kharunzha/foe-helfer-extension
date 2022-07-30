@@ -363,6 +363,10 @@ table.foe-table tr td {
 	padding: 2px 5px;
 }
 
+table.foe-table#InvestmentTable tr td {
+	padding: 0;
+}
+
 table.foe-table tr td {
 	border-top: 1px solid var(--border-table-top);
 	border-bottom: 1px solid var(--border-table-bottom);
