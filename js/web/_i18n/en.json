@@ -131,6 +131,7 @@
     "Boxes.Calculator.Step": "Level ",
     "Boxes.Calculator.TTForderCosts": "Cost = __nettoreward__ <small>(Net Reward)</small> X __forderfactor__% <small>(Your invest)</small> = __costs__",
     "Boxes.Calculator.TTForderFPStockLow": "ATTENTION: Not enough FP Packs in stock!<br>You only have __fpstock__ of __costs__FP<br>That is __tooless__FPs too few",
+    "Boxes.Calculator.TTAggressiveInvestmentFPStockLow": "ATTENTION: FP supply is too low<br> You only have __fpstock__ from __costs__FP<br> That's __tooless__FP too few",
     "Boxes.Calculator.TTForderNegativeProfit": "Spot is not safe. __fpcount__ additional FPs must be added.<br>Total to make spot safe: __totalfp__ FPs",
     "Boxes.Calculator.TTLevelWarning": "Adding __fpcount__ FPs too many!<br>Maximum investment: __totalfp__ FPs",
     "Boxes.Calculator.TTLoss": "Reward = __nettoreward__ <small>(Net Reward)</small> X __arcfactor__% <small>(Arc Bonus)</small> = __bruttoreward__<br>Cost: __costs__ - Place locked at: __safe__<br>Loss = __costs__ <small>(Cost)</small> - __bruttoreward__ <small>(Reward)</small> = __loss__",
