@@ -1,5 +1,38 @@
 ## Changelog - Extension
 
+##### 2.11.0.0
+
+**Neu**
+- GB FP Doppelzahlung
+	- kann in den Box-Einstellungen durch Eingabe eines Wertes größer 0 aktiviert werden
+		- wenn aktiv, werden das Eingabefeld und der Bezahlbutton nach jeder FP-Zahlung für den angegebenen Wert in Sekunden blockiert
+		- dies kann doppelte FP-Zahlungen in Fällen verhindern, in denen der Server langsam mit einer Antwort ist und das Eingabefeld scheinbar nicht auf den Mausklick reagiert hat
+
+**BugFix**
+- Wiederkehrende Quests
+	- Der Menüeintrag wird nun korrekt angezeigt und das Modul ist nun korrekt zugänglich
+
+---
+
+##### 2.10.0.0
+
+**New**
+- Wiederkehrende Quests
+	- Dieses Modul zeigt, für welche Quests der Helfer sicher ist, dass du bereits Diamanten erhalten hast.
+		- zeigt es ein "✓", hast du bereits Diamanten erhalten
+		- zeigt es ein "?", hat der Helfer noch nicht beobachtet, dass du Diamanten oder Medaillen bekommen hast für diese Quest - du könntest aber evtl. schon Diamanten auf einem anderen Gerät, vor Aktivierung dieses Features oder vor Installation des Helfers bekommen haben.
+
+**BugFix**
+- Eigenanteilsrechner
+	- [#2491](https://github.com/mainIine/foe-helfer-extension/issues/2491) "P(XX)" Einstellungen wurde nicht korrekt gespeichert/abgerufen.
+
+- Aztecs Minigame Helper
+	- [#1489](https://github.com/mainIine/foe-helfer-extension/issues/2489) Box wurde nicht angezeigt.
+
+---
+
+##### 2.9.3.0
+
 **Update**
 - Musik-Modul:
 	- Enthält jetzt einen Titel für die Gemeinschaftsveranstaltung
