@@ -536,6 +536,7 @@ const FoEproxy = (function () {
 	function xhrOnSend(data) {
 		if (!proxyEnabled ) return;
 		if (!data) return;
+		if (typeof data != 'string') return; // we cant's parse json from other types
 		const post = JSON.parse(new TextDecoder().decode(data))[0];
 		//console.log(post);
 		if (!post || !post.requestClass || !post.requestMethod || !post.requestData) return;
