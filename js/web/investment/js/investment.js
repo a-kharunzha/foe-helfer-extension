@@ -809,7 +809,7 @@ let Investment = {
 		// easiest case, already invested and profit is more then half of rest
 		let restToPut = contribution['max_progress'] - contribution['current_progress'];
 		// let's imagine 200 medals worth paying 1 FP
-		let medalsEquivalentProfit = Math.floor(contribution['medals'] / 200);
+		let medalsEquivalentProfit = 0; // Math.floor(contribution['medals'] / 200);
 		// contribution['profit'] is return of the investment. It already includes that amount that we put in
 		if (Math.ceil(restToPut / 2) < contribution['profit'] + medalsEquivalentProfit) {
 			return true;
