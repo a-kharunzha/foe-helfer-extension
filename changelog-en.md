@@ -1,5 +1,70 @@
 ## Changelog - Extension
 
+##### 2.12.1.1
+
+**Update**
+- Discord Webhooks:
+  - en/de Help links added
+
+**BugFix**
+- Discord Webhooks:
+	- Now visible for all players
+	- Entries were not displayed after saving
+
+---
+
+##### 2.12.1.0
+
+**New**
+- Discord Webhooks:
+	- (currently only) for the guild battles an event can be triggered which can send a message to the channel - WebHook of a Discord server at the first attack on a sector
+    - more events could follow if there is a need
+
+**Update**
+- enhancement:
+	- future-proof image links for possible changes of the Inno-Hosting policies (timestamp)
+
+**BugFix**
+- Battle Assist:
+	- [#2522](https://github.com/mainIine/foe-helfer-extension/issues/2522) the position of the "Higher Era Unit Lost"-Warning has been corrected in the case that the PVP tournament was not running (Sunday Evening - Monday morning)
+
+---
+
+###### 2.12.0.1
+
+**BugFix**
+- GvG map & log:
+	- Special characters in GvG box - fixed
+
+- Translations:
+	- hu.json fixed
+
+---
+
+##### 2.12.0.0
+
+**New**
+- Friends comparison in conversations:
+	- compares your friends list with selected conversation's participants
+		- open the module via the menu
+		- open the group info of the conversation you are interested in
+
+- Auctions:
+	- when active, this calculates an auction bid based on a given sequence and the current bid and places it in the clipboard
+	- you have to paste the calculated bid into the bidding field manually
+	- you may activate this feature and edit the bidding sequence in the Settings under "Boxes"
+
+**Update**
+- Motivate/Polish Helper:
+	- if a player cannot be attacked, this is now indicated in the Era column
+
+**BugFix**
+- Extension:
+	- [#2515](https://github.com/mainIine/foe-helfer-extension/issues/2515) Constant bug in development log - Cosmetic fix
+
+- GvG Map & Log:
+	- [#2526](https://github.com/mainIine/foe-helfer-extension/issues/2526) Special characters in GvG box - fixed
+
 ##### 2.11.0.0
 
 **New**

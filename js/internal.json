@@ -1,4 +1,5 @@
 [
+	"srcLinks",
 	"_languages",
 	"_helper",
 	"_menu",
@@ -52,5 +53,7 @@
 	"minigame_aztecs",
 	"recurring-quests",
 	"minigame_wildlife",
-	"doublefpprevention"
+	"doublefpprevention",
+	"compare_friends_threads",
+	"auctions"
 ]

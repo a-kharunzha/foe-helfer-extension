@@ -378,7 +378,7 @@ let Settings = {
 	About: () => {
 		return '<hr>' +
 			'<h2>' + i18n('Settings.About.TranslateTitle') + '</h2>' +
-			'<p>' + i18n('Settings.About.TranslateDesc') + ' <a href="http://i18n.foe-helper.com/" target="_blank">Weblate</a></p>' +
+			'<p>' + i18n('Settings.About.TranslateDesc') + ' <a href="http://i18n.foe-helper.com/projects/foe-helper/extension/" target="_blank">Weblate</a></p>' +
 			'<hr>' +
 			'<h2>' + i18n('Settings.About.RatingTitle') + '</h2>' +
 			'<p>' + i18n('Settings.About.RatingDesc') + '</p>';
@@ -491,7 +491,7 @@ let Settings = {
 	 *
 	 * @returns {null|undefined|jQuery}
 	 */
-	 doubleFPtimeout: () => {
+	doubleFPtimeout: () => {
 		let ip = $('<input />').addClass('setting-input').attr({
 			type: 'number',
 			id: 'doubleFPtimeoutinput',
@@ -571,7 +571,7 @@ let Settings = {
 	 *
 	 * @returns {null|undefined|jQuery}
 	 */
-	 InfoboxInputEntryCount: () => {
+	InfoboxInputEntryCount: () => {
 		let ip = $('<input />').addClass('setting-input').attr({
 			type: 'number',
 			id: 'infobox-entry-length',
