@@ -1,16 +1,15 @@
 /*
+ * *************************************************************************************
  *
- *  * **************************************************************************************
- *  * Copyright (C) 2022 FoE-Helper team - All Rights Reserved
- *  * You may use, distribute and modify this code under the
- *  * terms of the AGPL license.
- *  *
- *  * See file LICENSE.md or go to
- *  * https://github.com/mainIine/foe-helfer-extension/blob/master/LICENSE.md
- *  * for full license details.
- *  *
- *  * **************************************************************************************
+ * Copyright (C) 2022 FoE-Helper team - All Rights Reserved
+ * You may use, distribute and modify this code under the
+ * terms of the AGPL license.
  *
+ * See file LICENSE.md or go to
+ * https://github.com/mainIine/foe-helfer-extension/blob/master/LICENSE.md
+ * for full license details.
+ *
+ * *************************************************************************************
  */
 
 let _menu = {
@@ -62,7 +61,8 @@ let _menu = {
 		'minigame_aztecs',
 		'recurringQuests',
 		'compare_friends_threads',
-		'discord'
+		'discord',
+		'findGB'
 		// 'marketOffers',
 	],
 
@@ -112,6 +112,7 @@ let _menu = {
 		} else {
 			if (!flag && selMenu != MainParser.SelectedMenu) {			
 			$('#menu_box').remove();
+			$('.tooltip').remove();
 			_menu.CallSelectedMenu(MainParser.SelectedMenu);
 			}
 		}
@@ -496,6 +497,22 @@ let _menu = {
 
 		return btn_Info.append(btn_Inf);
 	},
+	/**
+	 * tracked GB nach Filterbedingung
+	 *
+	 * @returns {*|jQuery}
+	 */
+	
+	findGB_Btn: () => {
+
+		let btn_ = _menu.MakeButton('findGB', i18n('Boxes.findGB.Title'), i18n('Menu.findGB.Desc'));
+
+		let btn = $('<span />').on('click', function () {
+			findGB.ShowDialog();
+		});
+
+		return btn_.append(btn);
+	},
 
 	/**
 	 * Technologien
@@ -568,7 +585,7 @@ let _menu = {
 	 *
 	 * @returns {null|undefined|jQuery}
 	 */
-	 hiddenRewards_Btn: () => {
+	hiddenRewards_Btn: () => {
 		let btn_RewardsBG = _menu.MakeButton('hiddenRewards', i18n('Menu.HiddenRewards.Title'), i18n('Menu.HiddenRewards.Desc'));
 
 		let btn_Rewards = $('<span />').on('click', function () {

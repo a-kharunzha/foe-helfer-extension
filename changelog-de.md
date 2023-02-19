@@ -1,5 +1,103 @@
 ## Changelog - Extension
 
+##### 3.2.0.0
+
+**New**
+- Merger Game (Geburtstagsevent Minispiel)
+	- gibt einen Überblick über die auf dem Spielbrett vorhandenen Schlüsselteile
+
+**Update**
+- Musik-Modul:
+	- neuer Track hinzugefügt (aktuell nur auf Beta-Server verfügbar)
+
+- Event-Kosten Rechner:
+	- zweite Kostenspalte am Ende der Tabelle eingefügt 
+	- Hervorheben der günstigsten Option erfolgt jetzt zusätzlich in der entsprechenden Kostenspalte
+
+- Kits:
+	- Die Liste kann nun gefiltert werden - nach Name des Gegenstands oder des Sets
+
+**BugFix**
+- General:
+	- Spieler-Portraits wurden manchmal nicht angezeigt, wenn Module zu zeitig nach Spielstart geöffnet wurden
+
+---
+
+##### 3.1.0.1
+
+**Update**
+- Spieler-ID hinzugefügt zum Export von:
+	- Expeditionsdaten
+	- GG-Daten
+	- Gildenmitglieder-Daten
+
+**BugFix**
+- Alarme:
+	- Alarme wurden vorzeitig gelöscht
+
+- General:
+	- Die Changelog wurden nicht mehr aufgerufen, nachdem ein Update durchgeführt wurde
+
+---
+
+##### 3.1.0.0
+
+**Neu**
+- LB Spürhund:
+	- hilft bei der LB-Suche - z.B. bei der BP-Jagd
+	- während durch die LB-Rangliste oder die LB-Liste anderer Spieler geklickt wird, zeichnet der LB-Spürhund alle LB auf, die angegebenen Kriterien entsprechen
+	- wähle das gewünschte LB aus, gib gegebenenfalls einen Stufenbereich an und geh auf die Jagd
+	- "zurücksetzen" löscht die Liste und den Filter
+
+**Update**
+- LB Rechner:
+	- neue Formatierung
+
+- GvG:
+	- BA Kosten für die nächste Belagerung wurden hinzugefügt
+	- Macht Bonus für die ersten drei Gilden auf einer Karte wurde hinzugefügt
+
+**BugFix**
+- Menü:
+	- Es konnte passieren, dass Tooltips zurückgelassen wurden, wenn das Menü durch Zoom oder ähnliche Aktionen von einem Modus in einen anderen Modus gezwungen wurde.
+
+- StPatrick:
+	- aktualisierte nicht mehr korrekt
+
+- GG:
+	- X1 wurde nicht korrekt aktualisiert
+
+---
+
+##### 3.0.0.1
+
+**BugFix**
+- Statistiken:
+  - Script wurde nicht immer lokal eingebunden, das ist nun geändert
+
+---
+
+##### 3.0.0.0
+
+**Neu**
+- Erweiterung:
+  - Kompatibilität für die neuen Manifest V3 Anforderungen für Chromium-Browser geschaffen, Firefox folgt  im 1 Quartal 2023
+  - diverse CSS Anpassungen
+
+**Update**
+- Discord Webhooks:
+  - Kopieren Button ergänzt
+  - Maximale Höhe für viele Einträge ergänzt
+  - Testbutton integriert
+  - beliebig viele Webhook Urls können hinterlegt werden
+  - neue Funktionen werden folgen...
+
+**BugFix**
+- Notizfunktion: 
+  	- Box wurde wegen eines fehlerhaften Avatar links nicht angezeigt
+
+---
+
 ##### 2.12.1.1
 
 **Update**

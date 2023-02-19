@@ -1,5 +1,119 @@
 ## Changelog - Extension
 
+##### 3.2.0.0
+
+**New**
+- Merger Game (Anniversary Event Mini game)
+	- gives an overview about the key pieces present on the board
+
+**Update**
+- Music-Modul:
+	- added new Track (will be available on live latest with the anniversary event, currently only available on beta)
+
+- Event cost calculator:
+	- second cost column added to the right side of table 
+	- highlighting of the most efficient option now also is in the respective cost column
+
+- Kits:
+	- The list may now be filtered - for name of item or set
+
+**BugFix**
+- General:
+	- Player-Portraits were not loaded when modules were opened too soon after loading the game
+
+---
+
+##### 3.1.0.1
+
+**Update**
+- Player-ID added to the export of:
+	- GE Data
+	- BGB Data
+	- Guidmember-Data
+
+**BugFix**
+- Alerts:
+	- Alerts were deleted prematurely
+
+- General:
+	- Changelogs were not opened anymore after an update was installed
+
+---
+
+##### 3.1.0.0
+
+**New**
+- GB Tracker:
+	- helps you find specific GBs - e.g. for BP hunting
+	- while you click through the GB ranking or view GB Lists of other Players (e.g. neighbours, friends, guild) the tracker will record all GB that match your criteria
+	- choose the desired GB, enter a level range you are interested in and go hunting
+	- "resetting" will clear the list and reset the filter
+
+**Update**
+- GB Calculator:
+	- new formatting
+
+- GvG:
+	- Costs for the next siege have been added to the list
+	- Ranking bonus for the first three guilds on a map has been added
+
+**BugFix**
+- Menu:
+	- tooltips could be left behind when the menu mode was force-changed due to zooming or the like
+
+- StPatrick:
+	- did not update anymore properly
+
+- GBG:
+	- X1 (and A1 on the volcano map) was not tracked properly
+
+---
+
+##### 3.0.0.1
+
+**BugFix**
+- Statistics:
+	- Script was not always included locally, this is now changed
+
+---
+
+##### 3.0.0.0
+
+**New**
+- Extension:
+	- Compatibility created for new Manifest V3 requirements for Chromium browsers, Firefox will follow only in Q1 2023
+	- several CSS adjustments
+
+**Update**
+- Discord Webhooks:
+	- Copy button added
+	- maximum height for many entries added
+	- test button integrated
+	- as many webhook urls as you like can be added
+	- new functions will follow...
+
+**BugFix**
+- Note function:
+	- Box was not displayed because of a faulty avatar on the left side
+
+---
+
+##### 2.12.2.0
+
+**Update**
+- Discord webhooks:
+	- Copy button added
+	- Maximum height for many entries added
+	- test button integrated
+	- any number of webhook urls can be stored
+    - new functions will follow...
+
+**BugFix**
+- note function:
+	- Box was not displayed because of a faulty avatar on the left side
+
+---
+
 ##### 2.12.1.1
 
 **Update**

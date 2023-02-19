@@ -608,6 +608,7 @@ let GuildFights = {
 		GuildFights.PlayerBoxContent = [];
 
 		GuildFights.PlayerBoxContent.push({
+			player_id: 'player_id',
 			player: 'player',
 			negotiationsWon: 'negotiations',
 			battlesWon: 'battles',
@@ -704,6 +705,7 @@ let GuildFights = {
 			b.push('</tr>');
 
 			GuildFights.PlayerBoxContent.push({
+				player_id: playerNew['player_id'],
 				player: playerNew['name'],
 				negotiationsWon: playerNew['negotiationsWon'],
 				battlesWon: playerNew['battlesWon'],
@@ -1092,7 +1094,7 @@ let GuildFights = {
 			if (!mapdata.hasOwnProperty(i)) 
 				break;
 
-			let id = mapdata[i]['id'];
+			let id = mapdata[i]['id'] || 0;
 
 			for (let x in gbgGuilds) {
 				if (!gbgGuilds.hasOwnProperty(x)) {
@@ -1437,16 +1439,16 @@ let GuildFights = {
 				break;
 			}
 
+			if (!data['id']) {
+				data['id'] = 0; // A1 delivers no ID, set to 0
+			}
+
 			let d = data['conquestProgress'][i],
 				max = d['maxProgress'],
 				progess = d['progress'],
 				cell = $(`tr#province-${data['id']}`),
 				pColor = ProvinceMap.getSectorColors(GuildFights.MapData.map?.provinces[data.id]?.ownerId),
 				p = GuildFights.MapData['battlegroundParticipants'].find(o => (o['participantId'] === d['participantId']));
-
-			if (!data['id']) {
-				continue;
-			}
 
 			// <tr> is not present, create it
 			if (cell.length === 0) {
@@ -1555,7 +1557,8 @@ let GuildFights = {
 				}
 
 				let r = GuildFights.PlayerBoxContent[i];
-				csv.push(`${r['player']};${r['negotiationsWon']};${r['battlesWon']};${r['total']}`);
+				console.log(r);
+				csv.push(`${r['player_id']};${r['player']};${r['negotiationsWon']};${r['battlesWon']};${r['total']}`);
 			}
 
 			blob = new Blob([BOM + csv.join('\r\n')], {
